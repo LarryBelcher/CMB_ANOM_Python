@@ -1,6 +1,6 @@
 #!/bin/csh
 
-cd /Users/belcher/Desktop/NOAA_CSC/CLMDIV/CMB_Anom/Images
+cd /Users/belcher/Desktop/NOAA_CSC/CLMDIV/CMB_Anom_Python/Images
 
 #Upload all of the images
 scp -i /Users/belcher/AwsFiles/NewEarl.pem ./Temperature/620/* ubuntu@107.20.157.228:/var/www/Images/averagetempanom-monthly-cmb/620/
@@ -16,7 +16,7 @@ scp -i /Users/belcher/AwsFiles/NewEarl.pem ./Precipitation/hd/* ubuntu@107.20.15
 scp -i /Users/belcher/AwsFiles/NewEarl.pem ./Precipitation/hdsd/* ubuntu@107.20.157.228:/var/www/Images/precipanom-monthly-cmb/hdsd/
 
 #Now for local cleanup
-rm ./Temperature/*/*
-rm ./Precipitation/*/*
+rm ./Temperature/*/averagetempanom*
+rm ./Precipitation/*/precipanom*
 
 exit

@@ -5,8 +5,7 @@ mpl.use('Agg')
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
-import os, datetime, sys, subprocess
-import numpy as np
+import os, sys, subprocess, glob
 
 
 
@@ -34,7 +33,7 @@ ms = int2str(mm)
 labeldate = ms+' '+yyyy
 
 
-imgsize = sys.argv[2]   #(expects 620, 1000, DIY, HD, or HDSD)
+imgsize = sys.argv[2]   #(expects 620, 1000, DIY, HD, HDSD, or GEO)
 
 figdpi = 72
 
@@ -42,17 +41,15 @@ figdpi = 72
 p1 = subprocess.Popen("python anomtavgMap.py "+fdate+" "+imgsize, shell=True)
 p1.wait()
 
-
-p2 = subprocess.Popen("python anomtavgColorbar.py "+fdate+" "+imgsize, shell=True)
-p2.wait()
-
-
-if not os.path.isdir('./Images'):
-	cmd = 'mkdir ./Images'
-	subprocess.call(cmd,shell=True)
-if not os.path.isdir('./Images/Temperature/'+imgsize):
-	cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
-	subprocess.call(cmd,shell=True)
+if(imgsize != 'GEO'):
+	p2 = subprocess.Popen("python anomtavgColorbar.py "+fdate+" "+imgsize, shell=True)
+	p2.wait()
+	if not os.path.isdir('./Images'):
+		cmd = 'mkdir ./Images'
+		subprocess.call(cmd,shell=True)
+	if not os.path.isdir('./Images/Temperature/'+imgsize):
+		cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
+		subprocess.call(cmd,shell=True)
 
 
 
@@ -69,7 +66,7 @@ if(imgsize == '620' or imgsize == '1000'):
 	pngfile = img_path+img_name
 	print "Saving "+pngfile
 	im3.save(pngfile)
-
+	
 
 if(imgsize == 'DIY'):
 	im1 = "./temporary_map.png"
@@ -91,6 +88,22 @@ if(imgsize == 'DIY'):
 	cmd3 = 'rm '+img_name+' '+cbar_name
 	subprocess.call(cmd3,shell=True)
 
+
+if(imgsize == 'GEO'):
+	im1 = "./temporary_map.tif"
+	tifimgs = Image.open(im1)
+	tifimgw = str(tifimgs.size[0])
+	tifimgh = str(tifimgs.size[1])
+	tifimg_name = 'averagetempanom-monthly-cmb--'+tifimgw+'x'+tifimgh+'--'+yyyy+'-'+mm+'-00.tif'
+	cmd = 'gdal_translate -of GTiff -a_srs EPSG:4326  -a_ullr -179.9853516 74.9853516 -59.9853516 14.9853516 '+im1+' '+tifimg_name
+	subprocess.call(cmd,shell=True)
+	zpath = './Images/Temperature/diy/*'+yyyy+'-'+mm+'-00.zip'
+	zipfile = glob.glob(zpath)
+	cmd = 'zip -u '+zipfile[0]+' '+tifimg_name
+	subprocess.call(cmd,shell=True)
+ 	cmd2 = 'rm '+tifimg_name
+	subprocess.call(cmd2,shell=True)
+
 	
 if(imgsize == 'HD'):
 	hdim = Image.new("RGB", (1920,1080), color='#FFFFFF')
@@ -108,7 +121,7 @@ if(imgsize == 'HD'):
 	hdim.paste(im1new, (192,108))
 	
 	draw = ImageDraw.Draw(hdim)
-	fntpath = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf'
+	fntpath = './Fonts/Trebuchet_MS.ttf'
 	fnt1 = ImageFont.truetype(fntpath, 18)
 	if(mm == '00'): xpos = 1632
 	if(mm == '01'): xpos = 1615
@@ -177,7 +190,7 @@ if(imgsize == 'HDSD'):
 	hdim.paste(im1new, (384,108))
 	
 	draw = ImageDraw.Draw(hdim)
-	fntpath = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf'
+	fntpath = './Fonts/Trebuchet_MS.ttf'
 	fnt1 = ImageFont.truetype(fntpath, 18)
 	if(mm == '00'): xpos = 1440
 	if(mm == '01'): xpos = 1420

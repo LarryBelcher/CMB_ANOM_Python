@@ -62,7 +62,7 @@ if __name__ == '__main__':
 	#If the value of "dchk" is not "missing", proceed to produce the maps for the 
 	#previous month
 	if(dchk != '-99.90'):	
-		isz = ['620', '1000', 'DIY', 'HD', 'HDSD']
+		isz = ['620', '1000', 'DIY', 'GEO', 'HD', 'HDSD']
 		for i in xrange(len(isz)):
 			cmd = 'python anomtavgDriver.py '+stryyyy+strmm+' '+isz[i]
 			subprocess.call(cmd, shell=True)

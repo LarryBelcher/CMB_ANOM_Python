@@ -2,15 +2,12 @@
 
 import matplotlib as mpl
 mpl.use('Agg')
-import os, datetime, sys
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 import matplotlib.colors as colors
-from mpl_toolkits.basemap import Basemap
-from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.font_manager as font_manager
-from PIL import Image
+
 
 
 def int2str(mm):
@@ -39,9 +36,9 @@ if(mm == '00'): labeldate = ms
 
 imgsize = sys.argv[2]   #(expects 620, 1000, DIY, HD, or HDSD)
 
-path = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf'
+path = './Fonts/Trebuchet_MS.ttf'
 propr = font_manager.FontProperties(fname=path)
-path = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf'
+path = './Fonts/Trebuchet_MS_Bold.ttf'
 propb = font_manager.FontProperties(fname=path)
 
 if(imgsize == '620'):

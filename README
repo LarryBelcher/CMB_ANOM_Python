@@ -2,7 +2,12 @@ README for the CMB Climate Division temperature anomaly and percent normal preci
 
 
 Abstract:
-This project utilizes several python scripts to produce CONUS maps of monthly temperature anomaly and percent normal precipitation from the CMB Climate Division dataset. The monthly maps are produced by calling anomMainDriver.py. This script will process the most recent monthly maps (e.g., last month), but is also capable of processing any month/year that a user might desire. The output from the two monthly scripts (anomtavgDriver.py and anomprecipDriver.py) is set (hard coded) to place images in an "Images" directory in the same directory that comtains these scripts.
+This project utilizes several python scripts to produce CONUS maps of monthly temperature anomaly and 
+percent normal precipitation from the CMB Climate Division dataset. The monthly maps are produced by 
+calling anomMainDriver.py. This script will process the most recent monthly maps (e.g., last month), 
+but is also capable of processing any month/year that a user might desire. The output from the two 
+monthly scripts (anomtavgDriver.py and anomprecipDriver.py) is set (hard coded) to place images 
+in the "Images" directory inside the directory that contains these scripts.
 
 
 Usage: ./anomMaindriver.py [args]
@@ -43,16 +48,6 @@ Other files in this project:
 colorbar and logo (.png and .eps) files included here are sized for each of the image 
 sizes and are used by the various python scripts that produce the reprojected images
 
-
-
-Notes on portability:
-
-1) All image making scripts in the project need the path to Trebuchet MS true-type font.
-e.g.,
-
-	/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf
-
-	*This path depends entirely on the location the sysadmin installs “add-on” fonts.
 
 
 

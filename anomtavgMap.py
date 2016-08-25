@@ -2,16 +2,15 @@
 
 import matplotlib as mpl
 mpl.use('Agg')
-import os, datetime, sys, shapefile, glob
+import os, sys, shapefile, glob
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
 from matplotlib.collections import LineCollection
-import matplotlib.colors as colors
 from mpl_toolkits.basemap import Basemap
-from mpl_toolkits.axes_grid1 import ImageGrid
 import matplotlib.font_manager as font_manager
 from PIL import Image
+from pyproj import Proj, transform
+
 
 
 def divlookup(dfile, division, year, month):
@@ -143,9 +142,9 @@ dfile = dfile[0]
 normfile = glob.glob('./Data/norm-climdiv-norm-tmp*')
 normfile = normfile[0]
 
-path = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS.ttf'
+path = './Fonts/Trebuchet_MS.ttf'
 propr = font_manager.FontProperties(fname=path)
-path = '/usr/local/share/fonts/truetype/msttcorefonts/Trebuchet_MS_Bold.ttf'
+path = './Fonts/Trebuchet_MS_Bold.ttf'
 propb = font_manager.FontProperties(fname=path)
 
 if(imgsize == '620'):
@@ -219,6 +218,17 @@ if(imgsize == 'HDSD'):
 	framestat = 'False'
 	bgcol = '#F5F5F5'
 	cmask = "./Custom_HDSD_mask.png"
+	
+
+if(imgsize == 'GEO'):
+	figxsize = 13.655
+	figysize = 8.745
+	figdpi = 300
+	lllon, lllat, urlon, urlat = [-179.9853516, 14.9853516, -59.9853516, 74.9853516]
+	framestat = 'False'
+	base_img = './trans.tif'
+	bgcol = 'none'
+
 
 
 fig = plt.figure(figsize=(figxsize,figysize))
@@ -229,21 +239,40 @@ ax1.spines['right'].set_visible(False)
 ax1.spines['bottom'].set_visible(False)
 ax1.spines['top'].set_visible(False)
 
-# Create Map and Projection Coordinates
-kwargs = {'epsg' : 5070,
-          'resolution' : 'i',
-          'llcrnrlon' : lllon,
-          'llcrnrlat' : lllat,
-          'urcrnrlon' : urlon,
-          'urcrnrlat' : urlat,
-          'lon_0' : -96.,
-          'lat_0' : 23.,
-          'lat_1' : 29.5,
-          'lat_2' : 45.5,
-		  'area_thresh' : 15000,
-		  'ax' : ax1,
-		  'fix_aspect' : False
-}
+#Set up the base map for everything except the geotif
+if(imgsize != 'GEO'):
+	# Create Map and Projection Coordinates
+	kwargs = {'epsg' : '5070',
+	          'resolution' : 'i',
+	          'llcrnrlon' : lllon,
+	          'llcrnrlat' : lllat,
+	          'urcrnrlon' : urlon,
+	          'urcrnrlat' : urlat,
+	          'lon_0' : -96.,
+	          'lat_0' : 23.,
+	          'lat_1' : 29.5,
+	          'lat_2' : 45.5,
+			  'area_thresh' : 15000,
+			  'ax' : ax1,
+			  'fix_aspect' : False
+	}
+
+#Set up the base map for the geotif
+if(imgsize == 'GEO'):
+	# Create Map and Projection Coordinates
+	kwargs = {'epsg' : '4326',
+	          'resolution' : 'i',
+	          'llcrnrlon' : lllon,
+	          'llcrnrlat' : lllat,
+	          'urcrnrlon' : urlon,
+	          'urcrnrlat' : urlat,
+	          'lon_0' : -119.9853516,
+	          'lat_0' : 44.9853516,
+			  'area_thresh' : 15000,
+			  'ax' : ax1,
+			  'fix_aspect' : False
+	}
+
 
 #Set up the Basemap
 m =Basemap(**kwargs)
@@ -296,20 +325,62 @@ if(mm != '00'):
 	    lines.set_linewidth(0.25)
 	    ax1.add_collection(lines)
 
+if(imgsize == 'GEO'):
+	inProj = Proj(init='epsg:3338')
+	outProj = Proj(init='epsg:4326')
+	#Now read in the Alaska Climate Division Shapes and fill the basemap 
+	s = shapefile.Reader(r"./Shapefiles/AK_divisions_NAD83")
+	shapes = s.shapes()
+	records = s.records()
+	
 
-#Add the custom mask
-omask_im = Image.open(cmask)
-m.imshow(omask_im, origin='upper', alpha=1., zorder=10, aspect='auto', interpolation='nearest')
+	for record, shape in zip(records,shapes):
+	    lons,lats = zip(*shape.points)
+	    lons,lats = transform(inProj,outProj,lons,lats)
+	    data = np.array(m(lons, lats)).T
+ 
+	    if len(shape.parts) == 1:
+	        segs = [data,]
+	    else:
+	        segs = []
+	        for i in range(1,len(shape.parts)):
+	            index = shape.parts[i-1]
+	            index2 = shape.parts[i]
+	            segs.append(data[index:index2])
+	        segs.append(data[index2:])
+	 
+	    lines = LineCollection(segs,antialiaseds=(1,))
+	    #Now obtain the data in a given poly and assign a color to the value
+	    div = str(record[0])
+	    if(len(div) < 2): div = '0'+div
+	    div = '50'+div
+	    dval = divlookup(dfile,div,yyyy,int(mm))
+	    nval = normlookup(normfile, div, int(mm))
+	    dval = dval-nval
+	    #Now normalize the data and map it to the color ramp
+	    dval = (dval - valmin) * (255/(valmax-valmin))
+	    #if(dval > valmax): dval = valmax - 0.1
+	    lines.set_facecolors(cmap(int(dval)))
+	    lines.set_edgecolors(cmap(int(dval)))
+	    lines.set_linewidth(0.25)
+	    ax1.add_collection(lines)
 
 
-#Add the Line image
-outline_im = Image.open(line_img)
-m.imshow(outline_im, origin='upper', alpha=0.75, zorder=10, aspect='auto')
+
+if(imgsize != 'GEO'):
+	#Add the custom mask
+	omask_im = Image.open(cmask)
+	m.imshow(omask_im, origin='upper', alpha=1., zorder=10, aspect='auto', interpolation='nearest')
+
+
+	#Add the Line image
+	outline_im = Image.open(line_img)
+	m.imshow(outline_im, origin='upper', alpha=0.75, zorder=10, aspect='auto')
 
 
 
 #Add the NOAA logo (except for DIY)
-if(imgsize != 'DIY'):
+if(imgsize == '620' or imgsize == '1000' or imgsize == 'HD' or imgsize == 'HDSD'):
 	logo_im = Image.open(logo_image)
 	height = logo_im.size[1]
 	# We need a float array between 0-1, rather than
@@ -320,6 +391,7 @@ if(imgsize != 'DIY'):
 
 
 outpng = "temporary_map.png"
+outtif = "temporary_map.tif"
 
 if(imgsize == '620' or imgsize == '1000' or imgsize == 'DIY'):
 	plt.savefig(outpng,dpi=figdpi, orientation='landscape', bbox_inches='tight', pad_inches=0.00)
@@ -327,4 +399,5 @@ if(imgsize == '620' or imgsize == '1000' or imgsize == 'DIY'):
 if(imgsize == 'HD' or imgsize =='HDSD'):
 	plt.savefig(outpng, dpi=figdpi, orientation='landscape')#, bbox_inches='tight', pad_inches=0.01)
 
-
+if(imgsize == 'GEO'):
+	plt.savefig(outtif, dpi=figdpi, orientation='landscape', transparent='true', bbox_inches='tight', pad_inches=0.00)
