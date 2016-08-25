@@ -41,11 +41,11 @@ if(imgsize != 'GEO'):
 	if not os.path.isdir('./Images'):
 		cmd = 'mkdir ./Images'
 		subprocess.call(cmd,shell=True)
-	if not os.path.isdir('./Images/Temperature/'):
-		cmd = 'mkdir ./Images/Temperature/'
+	if not os.path.isdir('./Images/Precipitation/'):
+		cmd = 'mkdir ./Images/Precipitation/'
 		subprocess.call(cmd,shell=True)
-	if not os.path.isdir('./Images/Temperature/'+imgsize):
-		cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
+	if not os.path.isdir('./Images/Precipitation/'+imgsize):
+		cmd = 'mkdir ./Images/Precipitation/'+imgsize.lower()
 		subprocess.call(cmd,shell=True)
 
 
