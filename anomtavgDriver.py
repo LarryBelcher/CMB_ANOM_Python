@@ -37,6 +37,14 @@ imgsize = sys.argv[2]   #(expects 620, 1000, DIY, HD, HDSD, or GEO)
 
 figdpi = 72
 
+if(imgsize != 'GEO'):
+	if not os.path.isdir('./Images'):
+		cmd = 'mkdir ./Images'
+		subprocess.call(cmd,shell=True)
+	if not os.path.isdir('./Images/Temperature/'+imgsize):
+		cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
+		subprocess.call(cmd,shell=True)
+
 
 p1 = subprocess.Popen("python anomtavgMap.py "+fdate+" "+imgsize, shell=True)
 p1.wait()
@@ -44,12 +52,6 @@ p1.wait()
 if(imgsize != 'GEO'):
 	p2 = subprocess.Popen("python anomtavgColorbar.py "+fdate+" "+imgsize, shell=True)
 	p2.wait()
-	if not os.path.isdir('./Images'):
-		cmd = 'mkdir ./Images'
-		subprocess.call(cmd,shell=True)
-	if not os.path.isdir('./Images/Temperature/'+imgsize):
-		cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
-		subprocess.call(cmd,shell=True)
 
 
 
