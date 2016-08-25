@@ -41,6 +41,9 @@ if(imgsize != 'GEO'):
 	if not os.path.isdir('./Images'):
 		cmd = 'mkdir ./Images'
 		subprocess.call(cmd,shell=True)
+	if not os.path.isdir('./Images/Temperature/'):
+		cmd = 'mkdir ./Images/Temperature/'
+		subprocess.call(cmd,shell=True)
 	if not os.path.isdir('./Images/Temperature/'+imgsize):
 		cmd = 'mkdir ./Images/Temperature/'+imgsize.lower()
 		subprocess.call(cmd,shell=True)
